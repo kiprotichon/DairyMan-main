@@ -293,3 +293,6 @@ INSERT INTO FeedConsumption (animalfed, quantity, type, cost, date) VALUES
 ('A009', 12.5, 'Hay', 700.00, '2023-08-02 10:00:00'),
 ('A011', 14.0, 'Napier Grass', 700.00, '2023-08-02 10:30:00'),
 ('A013', 10.0, 'Molasses', 500.00, '2023-08-02 11:00:00');
+
+
+
