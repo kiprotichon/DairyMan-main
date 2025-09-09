@@ -13,14 +13,7 @@ const bcrypt = require("bcrypt");
 const salt = bcrypt.genSaltSync(13);
 const session = require("express-session");
 const sqlQueries = require("./sqlStatement.js");
-
-dbConn.query(
-  "SELECT * FROM farmers where email = ?",
-  ["john@yahoon.com"],
-  (err, results) => {
-    console.log(results.length);
-  }
-);
+const utils = require("./utils.js");
 
 // middleware
 app.use(express.static(path.join(__dirname, "public"))); // static files will be served from the 'public' directory/folder
@@ -33,7 +26,7 @@ app.use(
   })
 );
 // authorization middleware
-const protectedRoutes = ["/dashboard", "/expenses"];
+const protectedRoutes = ["/dashboard", "/expenses", "/animal-profiles"];
 app.use((req, res, next) => {
   if (protectedRoutes.includes(req.path)) {
     // check if user is logged in
@@ -72,7 +65,6 @@ app.get("/login", (req, res) => {
   }
   res.render("login.ejs");
 });
-
 app.post("/register", (req, res) => {
   const { email, phone, password, fullname, farm_location, farm_name, county } =
     req.body;
@@ -124,15 +116,32 @@ app.post("/login", (req, res) => {
 });
 // console.log(bcrypt.hashSync("john123", salt));
 
+console.log(sqlQueries.getProductionRecordsForFarmer(4));
+
 // Dashboard route
 app.get("/dashboard", (req, res) => {
   dbConn.query(
     sqlQueries.getProductionRecordsForFarmer(req.session.farmer.farmer_id),
     (sqlErr, data) => {
-      console.log(data);
+      if (sqlErr) return res.status(500).send("Server Error!" + sqlErr);
+      const groupedData = utils.groupAndExtractLatest(data);
+      res.render("dashboard.ejs", { groupedData });
     }
   );
-  res.render("dashboard.ejs");
+});
+
+app.get("/animal-profiles", (req, res) => {
+  dbConn.query(
+    sqlQueries.getAnimalsProductionsForFarmer(req.session.farmer.farmer_id),
+    (sqlErr, animals) => {
+      if (sqlErr) return res.status(500).send("Server Error!" + sqlErr);
+      console.log(utils.getChartData(animals));
+
+      res.render("animal-profiles.ejs", {
+        animals: utils.getChartData(animals),
+      });
+    }
+  );
 });
 
 app.get("/logout", (req, res) => {

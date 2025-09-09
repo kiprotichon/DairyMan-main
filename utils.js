@@ -32,7 +32,7 @@ function groupAndExtractLatest(records) {
 
     // Rebuild arrays
     grouped[tag].production_dates = latest15.map((item) =>
-      item.date.toISOString()
+      item.date.toLocaleDateString()
     );
     grouped[tag].total_daily_productions = latest15.map(
       (item) => item.production
@@ -42,4 +42,14 @@ function groupAndExtractLatest(records) {
   return grouped;
 }
 
-module.exports = { groupAndExtractLatest };
+function getChartData(animals) {
+  const xValues = [];
+  const yValues = [];
+  animals.forEach((animal) => {
+    xValues.push(animal.animal_name + "-" + animal.animal_tag);
+    yValues.push(animal.total_production);
+  });
+  return [xValues, yValues];
+}
+
+module.exports = { groupAndExtractLatest, getChartData };
